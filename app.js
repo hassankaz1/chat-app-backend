@@ -1,22 +1,21 @@
-
-
 // require("dotenv").config();
 const express = require('express');
 const cors = require("cors");
 const { NotFoundError } = require('./expressError');
-// const { authenticateJWT } = require("./middleware/auth");
+const { authenticateJWT } = require("./middleware/auth");
 
 const app = express();
 
-// const userRoutes = require("./routes/user");
+const userRoutes = require("./routes/user");
+const authRoutes = require("./routes/auth");
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use(authenticateJWT);
+app.use(authenticateJWT);
 
-// app.use("/user", userRoutes);
-// app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
+app.use("/auth", authRoutes);
 
 
 /** Handle 404 errors -- this matches everything */

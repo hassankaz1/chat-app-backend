@@ -5,5 +5,5 @@ CREATE TABLE users (
   last_name TEXT NOT NULL,
   email TEXT NOT NULL
     CHECK (position('@' IN email) > 1),
-  avatar TEXT,
+  avatar TEXT
 );
