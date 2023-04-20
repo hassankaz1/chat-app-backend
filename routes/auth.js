@@ -28,10 +28,10 @@ router.post("/token", async function (req, res, next) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         }
-        const { username, password } = req.body;
-        const user = await User.authenticate(username, password);
+        const { email, password } = req.body;
+        const user = await User.authenticate(email, password);
         const token = createToken(user);
-        return res.json({ token });
+        return res.json({ token, user });
     } catch (err) {
         return next(err);
     }
@@ -48,6 +48,7 @@ router.post("/token", async function (req, res, next) {
 
 router.post("/register", async function (req, res, next) {
     try {
+        console.log(req.body)
         const validator = jsonschema.validate(req.body, userRegisterSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
@@ -56,29 +57,13 @@ router.post("/register", async function (req, res, next) {
         const newUser = await User.register({ ...req.body });
         const token = createToken(newUser);
         console.log(token)
-        return res.json({ token });
+        return res.json({ token, newUser });
     } catch (err) {
         return next(err);
     }
 });
 
 
-
-/** Get/auth/favorites/ 
- *
- * Return all of the user's favorites stations information
- * 
- * Authorization required: same-user-as-:username
- * */
-
-router.get("/favorites/:user_id", async function (req, res, next) {
-    try {
-        const result = await User.getAllFav(req.params.user_id);
-        return res.json({ result });
-    } catch (err) {
-        return next(err);
-    }
-});
 
 
 

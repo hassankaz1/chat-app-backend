@@ -22,12 +22,12 @@ class User {
     *  Throws UnauthorizedError is user not found or wrong password.
    * */
 
-    static async authenticate(username, password) {
+    static async authenticate(email, password) {
         const result = await db.query(
             `SELECT *
             FROM users
-            WHERE username = $1`,
-            [username],
+            WHERE email = $1`,
+            [email],
         );
 
         const user = result.rows[0];
@@ -37,7 +37,7 @@ class User {
             delete user.password;
             return user;
         } else {
-            throw new UnauthorizedError("Invalid username/password");
+            throw new UnauthorizedError("Invalid email/password");
         }
     }
 
@@ -48,17 +48,17 @@ class User {
      *
      * Throws BadRequestError on duplicates.
      **/
-    static async register({ username, password, firstName, lastName, email, avatar }) {
+    static async register({ email, password, firstName, lastName, avatar }) {
 
         //checks for duplicated username
         const duplicateCheck = await db.query(
-            `SELECT username
+            `SELECT email
              FROM users
-             WHERE username = $1`,
-            [username],
+             WHERE email = $1`,
+            [email],
         );
         if (duplicateCheck.rows[0]) {
-            throw new BadRequestError(`Duplicate username: ${username}`);
+            throw new BadRequestError(`Associated account already with: ${email}`);
         }
 
         //hash user's input password
@@ -67,23 +67,23 @@ class User {
         //save user data in databse
         const result = await db.query(
             `INSERT INTO users
-             (username,
+             (email,
               password,
               first_name,
               last_name,
-              email,
-              avatar
-             VALUES ($1, $2, $3, $4, $5, $6)
-             RETURNING username, first_name, last_name, email,avatar`,
+              avatar)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id, email, first_name, last_name, avatar`,
             [
-                username,
+                email,
                 hashedPassword,
                 firstName,
                 lastName,
-                email,
                 avatar
             ],
         );
+
+        console.log(hashedPassword)
 
         const user = result.rows[0];
 
@@ -97,24 +97,21 @@ class User {
      * Throws NotFoundError if user not found.
      **/
 
-    static async get(username) {
+    static async get(email) {
 
         const userRes = await db.query(
-            `SELECT id,
-            username,
+            `SELECT email,
             first_name, 
             last_name,
-            email, 
             avatar
             FROM users
-            WHERE username=$1`, [username],
+            WHERE email=$1`, [email],
         );
 
         const user = userRes.rows[0];
 
-        if (!user) throw new NotFoundError(`No user: ${username}`);
+        if (!user) throw new NotFoundError(`No user: ${email}`);
 
-        const userId = user["id"];
 
         return user;
     };
