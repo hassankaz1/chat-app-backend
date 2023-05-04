@@ -97,25 +97,59 @@ class User {
      * Throws NotFoundError if user not found.
      **/
 
-    static async get(email) {
+    static async get(id) {
 
         const userRes = await db.query(
-            `SELECT email,
-            first_name, 
-            last_name,
-            avatar
+            `SELECT *
             FROM users
-            WHERE email=$1`, [email],
+            WHERE id=$1`, [id],
         );
 
         const user = userRes.rows[0];
 
-        if (!user) throw new NotFoundError(`No user: ${email}`);
+        if (!user) throw new NotFoundError(`No user: ${id}`);
 
 
         return user;
     };
 
+    /** Given a id, return all friends from user.
+     *
+     * Returns : { id, username, first_name, last_name, email, avatar }
+     *
+     * Throws NotFoundError if user not found.
+     **/
+
+    static async getAllUsers(id) {
+
+        // select all users
+        const usersRes = await db.query(
+            `SELECT *
+            FROM users
+            WHERE id != $1`,
+            [id],
+        );
+
+        const users = usersRes.rows;
+
+        return users;
+    };
+
+    static async getFriends(id) {
+
+        // select all friends
+        const friendRes = await db.query(
+            `SELECT u.* 
+            FROM users u 
+            JOIN friendship f ON (u.id = f.friend_two OR u.id = f.friend_one) 
+            WHERE u.id <> $1
+              AND (f.friend_one = $1 OR f.friend_two = $1)`, [id],
+        );
+
+        const friendships = friendRes.rows;
+
+        return friendships;
+    };
 
 
 
@@ -134,7 +168,7 @@ class User {
      *
      */
 
-    static async update(username, data) {
+    static async update(id, data) {
 
         // check for correct password
         if (data.password) {
@@ -143,30 +177,37 @@ class User {
         const { setCols, values } = sqlForPartialUpdate(
             data,
             {
-                username: "username",
-                firstName: "first_name",
-                lastName: "last_name",
+                first_name: "first_name",
+                last_name: "last_name",
                 password: "password",
                 email: "email",
                 avatar: "avatar",
+                socket_id: "socket_id",
+                on_line: "on_line"
             });
-        const usernameVarIdx = "$" + (values.length + 1);
+
+        console.log(setCols)
+        console.log(values)
+        const idVarIdx = "$" + (values.length + 1);
 
         const querySql = `UPDATE users 
                           SET ${setCols} 
-                          WHERE username = ${usernameVarIdx} 
-                          RETURNING username,
+                          WHERE id = ${idVarIdx} 
+                          RETURNING id,
                                     first_name,
                                     last_name,
                                     email,
-                                    avatar`;
+                                    avatar,
+                                    socket_id,
+                                    on_line`;
 
-        const result = await db.query(querySql, [...values, username]);
+        const result = await db.query(querySql, [...values, id]);
         const user = result.rows[0];
 
-        if (!user) throw new NotFoundError(`No user: ${username}`);
+        if (!user) throw new NotFoundError(`No user: ${id}`);
 
         delete user.password;
+        console.log(user)
         return user;
     }
 

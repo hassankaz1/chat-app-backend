@@ -36,8 +36,9 @@ function authenticateJWT(req, res, next) {
 
 function ensureCorrectUser(req, res, next) {
   try {
+    console.log(res.locals)
     const user = res.locals.user;
-    if (!(user && (user.username === req.params.username))) {
+    if (!(user && (user.id === req.params.uid))) {
       throw new UnauthorizedError();
     }
     return next();

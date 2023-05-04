@@ -8,6 +8,7 @@ const app = express();
 
 const userRoutes = require("./routes/user");
 const authRoutes = require("./routes/auth");
+const friendrequestRoutes = require("./routes/friendrequest")
 
 app.use(cors());
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use(authenticateJWT);
 
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
+app.use("/friendrequest", friendrequestRoutes);
 
 
 /** Handle 404 errors -- this matches everything */

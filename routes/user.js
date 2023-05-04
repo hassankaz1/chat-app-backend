@@ -35,6 +35,31 @@ router.get("/:username", ensureCorrectUser, async function (req, res, next) {
     }
 });
 
+router.get("/get-all-users/:uid", async function (req, res, next) {
+    try {
+        console.log(req.params.uid)
+        const uid = req.params.uid;
+        const users = await User.getAllUsers(uid);
+
+        return res.json({ users });
+    } catch (err) {
+        return next(err);
+    }
+});
+
+
+router.get("/friends/:uid", async function (req, res, next) {
+    try {
+        console.log(req.params.uid)
+        const uid = req.params.uid;
+        const friends = await User.getFriends(uid);
+
+        return res.json({ friends });
+    } catch (err) {
+        return next(err);
+    }
+});
+
 
 
 /** PATCH /user/:id { user } => { user }
