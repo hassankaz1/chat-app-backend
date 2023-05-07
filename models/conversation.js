@@ -8,6 +8,78 @@ const {
 } = require("../expressError");
 
 const User = require("./user");
+const Message = require("./message");
+
+
+const Chat_History = [
+    {
+        type: "msg",
+        message: "Hi 👋🏻, How are ya ?",
+        incoming: true,
+        outgoing: false,
+    },
+    {
+        type: "divider",
+        text: "Today",
+    },
+    {
+        type: "msg",
+        message: "Hi 👋 Panda, not bad, u ?",
+        incoming: false,
+        outgoing: true,
+    },
+    {
+        type: "msg",
+        message: "Can you send me an abstarct image?",
+        incoming: false,
+        outgoing: true,
+    },
+    {
+        type: "msg",
+        message: "Ya sure, sending you a pic",
+        incoming: true,
+        outgoing: false,
+    },
+
+    {
+        type: "msg",
+        subtype: "img",
+        message: "Here You Go",
+        img: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fpixabay.com%2Fimages%2Fsearch%2Fnature%2F&psig=AOvVaw1NJYKsfdPxt4Em4vaPCg-_&ust=1683485504499000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCMC55K2u4f4CFQAAAAAdAAAAABAE",
+        incoming: true,
+        outgoing: false,
+    },
+    {
+        type: "msg",
+        message: "Can you please send this in file format?",
+        incoming: false,
+        outgoing: true,
+    },
+
+    {
+        type: "msg",
+        subtype: "doc",
+        message: "Yes sure, here you go.",
+        incoming: true,
+        outgoing: false,
+    },
+    {
+        type: "msg",
+        subtype: "link",
+        preview: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fpixabay.com%2Fimages%2Fsearch%2Fnature%2F&psig=AOvVaw1NJYKsfdPxt4Em4vaPCg-_&ust=1683485504499000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCMC55K2u4f4CFQAAAAAdAAAAABAE",
+        message: "Yep, I can also do that",
+        incoming: true,
+        outgoing: false,
+    },
+    {
+        type: "msg",
+        subtype: "reply",
+        reply: "This is a reply",
+        message: "Yep, I can also do that",
+        incoming: false,
+        outgoing: true,
+    },
+];
 
 
 /**
@@ -41,11 +113,11 @@ class Conversation {
     *  Throws UnauthorizedError is user not found.
    * */
 
-    static async createOrFindConversation(one, two) {
+    static async findConversation(one, two) {
 
         //checks for duplicated request
 
-        const duplicateCheck = await db.query(
+        const check = await db.query(
             `SELECT conversation.id
             FROM conversation
             INNER JOIN convoparticipants 
@@ -57,15 +129,23 @@ class Conversation {
         );
 
 
-        if (duplicateCheck.rows[0]) {
+        if (check.rows[0]) {
             const person = await User.get(one)
 
-            duplicateCheck.rows[0].user = person
+            check.rows[0].user = person
 
 
-            duplicateCheck.rows[0].messages = []
-            return duplicateCheck.rows[0]
+            check.rows[0].messages = await Message.findAllMessages(check.rows[0].cid)
+
+
+            console.log(check.rows[0])
+            return check.rows[0]
         }
+
+        return null
+    }
+
+    static async createConversation(one, two) {
 
         //save request data in databse
         const conversation = await db.query(
@@ -99,6 +179,24 @@ class Conversation {
 
 
         return members.rows[0]
+    }
+
+
+    static async findAllConversations(id) {
+
+        //checks for duplicated request
+
+        const conversations = await db.query(
+            `SELECT * FROM
+            convoparticipants 
+            WHERE convoparticipants.member_one = $1 OR convoparticipants.member_two = $1 `,
+            [id],
+        );
+
+
+
+
+        return conversations.rows
     }
 
     // static async findAllRequests(recipient) {

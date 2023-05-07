@@ -41,6 +41,8 @@ CREATE TABLE message (
   sender INT NOT NULL,
   recipient INT NOT NULL,
   msgtype TEXT NOT NULL,
+  msg TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  img TEXT,
   filelink TEXT
 )
