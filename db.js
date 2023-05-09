@@ -1,11 +1,12 @@
 const { Client } = require("pg");
+const dotenv = require('dotenv')
 
 let DB_URI;
 
 if (process.env.NODE_ENV === "test") {
     DB_URI = "postgresql:///chatapp_test";
 } else {
-    DB_URI = "postgresql:///chatapp";
+    DB_URI = process.env.DATABASE_URL || "postgresql:///chatapp";
 }
 
 let db = new Client({
