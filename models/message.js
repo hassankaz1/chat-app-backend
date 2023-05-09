@@ -51,7 +51,9 @@ class Message {
                  sender,
                  recipient,
                  msgtype,
-                 msg`,
+                 msg,
+                 created_at`
+            ,
             [
                 data.cid, data.sender, data.recipient, "msg", data.message
             ],

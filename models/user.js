@@ -135,6 +135,38 @@ class User {
         return users;
     };
 
+    static async getPotentialFriends(id) {
+
+        // select all users
+        const usersRes = await db.query(
+            `SELECT *
+            FROM users
+            WHERE users.id <> $1
+            AND users.id NOT IN (
+              SELECT sender
+              FROM friendrequest
+              WHERE recipient = $1
+              UNION
+              SELECT recipient
+              FROM friendrequest
+              WHERE sender = $1
+            )
+            AND users.id NOT IN (
+              SELECT friend_one
+              FROM friendship
+              WHERE friend_two = $1
+              UNION
+              SELECT friend_two
+              FROM friendship
+              WHERE friend_one = $1
+            );`, [id],
+        );
+
+        const users = usersRes.rows;
+
+        return users;
+    };
+
     static async getFriends(id) {
 
         // select all friends
@@ -186,8 +218,6 @@ class User {
                 on_line: "on_line"
             });
 
-        console.log(setCols)
-        console.log(values)
         const idVarIdx = "$" + (values.length + 1);
 
         const querySql = `UPDATE users 
@@ -207,7 +237,6 @@ class User {
         if (!user) throw new NotFoundError(`No user: ${id}`);
 
         delete user.password;
-        console.log(user)
         return user;
     }
 

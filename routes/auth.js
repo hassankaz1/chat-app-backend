@@ -11,6 +11,7 @@ const { createToken } = require("../helpers/tokens");
 const userAuthSchema = require("../schemas/userAuth.json");
 const userRegisterSchema = require("../schemas/userRegister.json");
 const { BadRequestError } = require("../expressError");
+const { generateUploadURL } = require("../s3");
 
 
 
@@ -48,7 +49,6 @@ router.post("/token", async function (req, res, next) {
 
 router.post("/register", async function (req, res, next) {
     try {
-        console.log(req.body)
         const validator = jsonschema.validate(req.body, userRegisterSchema);
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
@@ -62,6 +62,16 @@ router.post("/register", async function (req, res, next) {
         return next(err);
     }
 });
+
+router.get('/s3Url', async function (req, res, next) {
+    try {
+        const url = await generateUploadURL()
+        res.send({ url })
+    } catch (err) {
+        return next(err);
+    }
+
+})
 
 
 

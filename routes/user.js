@@ -13,6 +13,7 @@ const { createToken } = require("../helpers/tokens");
 
 const userRegisterSchema = require("../schemas/userRegister.json");
 const userAuthSchema = require("../schemas/userAuth.json");
+const { generateUploadURL } = require("../s3");
 
 const router = express.Router();
 
@@ -37,9 +38,9 @@ router.get("/:username", ensureCorrectUser, async function (req, res, next) {
 
 router.get("/get-all-users/:uid", async function (req, res, next) {
     try {
-        console.log(req.params.uid)
+
         const uid = req.params.uid;
-        const users = await User.getAllUsers(uid);
+        const users = await User.getPotentialFriends(uid);
 
         return res.json({ users });
     } catch (err) {
@@ -50,7 +51,7 @@ router.get("/get-all-users/:uid", async function (req, res, next) {
 
 router.get("/friends/:uid", async function (req, res, next) {
     try {
-        console.log(req.params.uid)
+
         const uid = req.params.uid;
         const friends = await User.getFriends(uid);
 
@@ -59,6 +60,8 @@ router.get("/friends/:uid", async function (req, res, next) {
         return next(err);
     }
 });
+
+
 
 
 
