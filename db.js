@@ -22,7 +22,6 @@ const db = new Client({
     }
 });
 
-console.log(process.env.DATABASE_URL)
 
 db.connect();
 
