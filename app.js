@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require("cors");
 const { NotFoundError } = require('./expressError');
 const { authenticateJWT } = require("./middleware/auth");
-const bodyParser = require('body-parser');
+
 
 const app = express();
 
@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(authenticateJWT);
-app.use(bodyParser({ limit: '50mb' }));
+app.options('*', cors())
 
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
